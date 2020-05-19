@@ -5,7 +5,8 @@ int main(int argc, char *argv[])
 {
     qSetMessagePattern("[ %{file}: %{line} ] %{message}");
     QCoreApplication a(argc, argv);
-    QString fullPath = QDir::cleanPath(a.applicationDirPath());
+    //QString fullPath = QDir::cleanPath(a.applicationDirPath());
+    QString fullPath = "/media/sonichy/JOB/TV";
     int port = 8000;
     QServer Server(fullPath, port);
     Server.StartServer();

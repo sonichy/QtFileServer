@@ -1,5 +1,7 @@
 #include "qclientthread.h"
 #include <QDateTime>
+#include <QHostAddress>
+#include <QMimeDatabase>
 
 QClientThread::QClientThread(QString storageFolder, qintptr ID, QObject *parent) : QThread(parent)
 {
@@ -30,7 +32,7 @@ void QClientThread::run()
 
 void QClientThread::readyRead()
 {
-    qDebug() << "+= Received";
+    qDebug() << "Received" << socket->peerAddress().toString();
     // receive header
     if(!headerReceived)
     {
@@ -85,9 +87,18 @@ void QClientThread::ProcessData(QByteArray receivedData)
     //QByteArray receivedData = socket->readAll();
     qDebug() << socketDescriptor;
     qDebug() << "Headers: ";
-    qDebug() << "===================================================================";
+    qDebug() << "_________________________________________________________________";
     //qDebug() << receivedData;
-    qDebug() << "===================================================================";
+    QString path;
+    QStringList SL = QString(receivedData).split("\r\n");
+    for(int i=0; i<SL.length(); i++){
+        qDebug() << "|" << SL.at(i);
+        if(SL.at(i).startsWith("GET ")){
+            QStringList SL_get = SL.at(i).split(" ");
+            path = SL_get.at(1);
+        }
+    }
+    qDebug() << "_________________________________________________________________";
 
     QString request = QString::fromLocal8Bit(receivedData);
     std::map<QString, QString> items;
@@ -142,7 +153,7 @@ void QClientThread::ProcessData(QByteArray receivedData)
         qDebug() << "action=" << "LIST";
         if(items["subject"] == "")
         {
-            responseData = ListSubjects();
+            responseData = ListSubjects("");
         }
         else
         {
@@ -214,7 +225,7 @@ void QClientThread::ProcessData(QByteArray receivedData)
             {
                 qDebug() << "Create subject folder:" << subjectFolder;
                 QDir().mkdir(subjectFolder);
-                responseData = ListSubjects();
+                responseData = ListSubjects("");
             }
             // Если тема задана
             if(items["theme"] != "")
@@ -292,11 +303,12 @@ void QClientThread::ProcessData(QByteArray receivedData)
     else
     {
         qDebug() << "action=" << "DEFAULT LIST";
-        responseData = ListSubjects();
+        responseData = ListSubjects(path);
     }
     // Отвечаем клиенту
 
     socket->write(response.arg(responseData).toUtf8());
+    qDebug() << "=== Response ==>";
     qDebug() << response.arg(responseData).toUtf8();
     // Закрываем соединение
     socket->disconnectFromHost();
@@ -395,10 +407,10 @@ QString QClientThread::ListShpores(QString subject, QString theme)
                             + "&shpora=" + QUrl::toPercentEncoding( filelist[i] )
                             + "'>" + filelist[i] + "</a></li>");
 
-    responseData.append("<img src='/?action=list&subject=" + QUrl::toPercentEncoding( subject )
-                        + "&theme=" + QUrl::toPercentEncoding( theme )
-                        + "&shpora=" + QUrl::toPercentEncoding( filelist[i] )
-                        + "'/></br>");
+        responseData.append("<img src='/?action=list&subject=" + QUrl::toPercentEncoding( subject )
+                            + "&theme=" + QUrl::toPercentEncoding( theme )
+                            + "&shpora=" + QUrl::toPercentEncoding( filelist[i] )
+                            + "'/></br>");
     }
     // Добавим кнопку загрузки шпаргалки
     responseData.append("</br>");
@@ -469,51 +481,82 @@ QString QClientThread::ListThemes(QString subject)
     return responseData;
 }
 // Метод получения списка предметов
-QString QClientThread::ListSubjects()
+QString QClientThread::ListSubjects(QString path)
 {
-//    QStringList folders;
-//    QDirIterator directories(storageFolder, QDir::Files | QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot);//, QDirIterator::Subdirectories);
+    //    QStringList folders;
+    //    QDirIterator directories(storageFolder, QDir::Files | QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot);//, QDirIterator::Subdirectories);
 
-//    while(directories.hasNext())
-//    {
-//        directories.next();
-//        folders << directories.fileName();// filePath();
-//    }
-//    // Строка ответ сервера
-//    QString responseData;
-//    responseData.append("<div id='outer' style='width: 100%'><div id='inner' style='display: table; margin: 0 auto'><div style='display: block; border: solid 1px #ccc'>");
-//    responseData.append("<ul style='list-style: none; margin: 0; padding: 0; text-align:center;' >");
+    //    while(directories.hasNext())
+    //    {
+    //        directories.next();
+    //        folders << directories.fileName();// filePath();
+    //    }
+    //    // Строка ответ сервера
+    //    QString responseData;
+    //    responseData.append("<div id='outer' style='width: 100%'><div id='inner' style='display: table; margin: 0 auto'><div style='display: block; border: solid 1px #ccc'>");
+    //    responseData.append("<ul style='list-style: none; margin: 0; padding: 0; text-align:center;' >");
 
-//    for(int i = 0; i < folders.size(); ++i) {
-//        responseData.append("<li><a style='display: block; padding: 5px; text-decoration: none; color: #666; border: 1px solid #ccc; background-color: #f0f0f0; border-bottom: none;'");
-//        responseData.append("onmouseover=\"this.style.color='#ffe'; this.style.backgroundColor='#5488af'\"");
-//        responseData.append("onmouseout=\"this.style.color='#666'; this.style.backgroundColor='#f0f0f0'\"");
-//        responseData.append("href='/?action=list&subject=" + QUrl::toPercentEncoding( folders[i] ) + "'>" + folders[i] + "</a></li>");
-//    }
+    //    for(int i = 0; i < folders.size(); ++i) {
+    //        responseData.append("<li><a style='display: block; padding: 5px; text-decoration: none; color: #666; border: 1px solid #ccc; background-color: #f0f0f0; border-bottom: none;'");
+    //        responseData.append("onmouseover=\"this.style.color='#ffe'; this.style.backgroundColor='#5488af'\"");
+    //        responseData.append("onmouseout=\"this.style.color='#666'; this.style.backgroundColor='#f0f0f0'\"");
+    //        responseData.append("href='/?action=list&subject=" + QUrl::toPercentEncoding( folders[i] ) + "'>" + folders[i] + "</a></li>");
+    //    }
 
-//    responseData.append("</ul>");
+    //    responseData.append("</ul>");
 
-//    responseData.append("</div></br>");
-//    responseData.append("<form name='addform' action='/?' method='get' onsubmit='replacespace();'>");
-//    responseData.append("<input type='hidden' name='action' value='add'>");
-//    responseData.append("<input id='p' type='text' name='subject'>");
-//    responseData.append("<input type='submit' value='Добавить предмет'>");
-//    responseData.append("</form>");
-//    responseData.append("<script>function replacespace() { var p = document.getElementById('p'); p.value = p.value.replace(/\\s+/g, ':');}</script>");
-//    responseData.append("</div></div>");
+    //    responseData.append("</div></br>");
+    //    responseData.append("<form name='addform' action='/?' method='get' onsubmit='replacespace();'>");
+    //    responseData.append("<input type='hidden' name='action' value='add'>");
+    //    responseData.append("<input id='p' type='text' name='subject'>");
+    //    responseData.append("<input type='submit' value='Добавить предмет'>");
+    //    responseData.append("</form>");
+    //    responseData.append("<script>function replacespace() { var p = document.getElementById('p'); p.value = p.value.replace(/\\s+/g, ':');}</script>");
+    //    responseData.append("</div></div>");
 
-    QDir dir(storageFolder);
-    //dir.setFilter(QDir::NoDotAndDotDot);
-    QFileInfoList fileInfoList = dir.entryInfoList();
-    QString responseData = "<!DOCTYPE html>\n<html>\n<head>\n<title>File List</title>\n<style>\na { text-decoration:none; }\ntd { padding:0 10px; }\n</style>\n</head>\n<body>\n<table>\n<tr><th>Name</th><th>Size</th><th>Time</th></tr>";
-    for(int i=0; i<fileInfoList.count(); i++) {
-        if(fileInfoList.at(i).isDir())
-            responseData.append("<tr><td>[<a href='" + fileInfoList.at(i).fileName() + "'>" + fileInfoList.at(i).fileName() + "</a>]</td><td>" + QString::number(fileInfoList.at(i).size()) + "</td><td>" + fileInfoList.at(i).lastModified().toString("yyyy-MM-dd hh:mm:ss") + "</td></tr>\n");
-        else
-            responseData.append("<tr><td><a href='" + fileInfoList.at(i).fileName() + "'>" + fileInfoList.at(i).fileName() + "</a></td><td>" + QString::number(fileInfoList.at(i).size()) + "</td><td>" + fileInfoList.at(i).lastModified().toString("yyyy-MM-dd hh:mm:ss") + "</td></tr>\n");
+    QString path_abs = storageFolder + QByteArray::fromPercentEncoding(path.toUtf8());  //%XX反转义
+    QFileInfo fileInfo(path_abs);
+    QString responseData;
+    if(fileInfo.isDir()){
+        QDir dir(path_abs);
+        //dir.setFilter(QDir::NoDotAndDotDot);
+        QFileInfoList fileInfoList = dir.entryInfoList();
+        responseData = "<!DOCTYPE html>\n<html>\n<head>\n<title>File List</title>\n<style>\na { text-decoration:none; }\ntd { padding:0 10px; }\n</style>\n</head>\n<body>\n<h1>" + path + "</h1>\n<table>\n<tr><th>Name</th><th>Size</th><th>Time</th></tr>";
+        for(int i=0; i<fileInfoList.count(); i++) {
+            if(fileInfoList.at(i).isDir())
+                responseData.append("<tr><td>[<a href='" + fileInfoList.at(i).fileName() + "'>" + fileInfoList.at(i).fileName() + "</a>]</td><td>" + QString::number(fileInfoList.at(i).size()) + "</td><td>" + fileInfoList.at(i).lastModified().toString("yyyy-MM-dd hh:mm:ss") + "</td></tr>\n");
+            else
+                responseData.append("<tr><td><a href='" + fileInfoList.at(i).fileName() + "'>" + fileInfoList.at(i).fileName() + "</a></td><td>" + QString::number(fileInfoList.at(i).size()) + "</td><td>" + fileInfoList.at(i).lastModified().toString("yyyy-MM-dd hh:mm:ss") + "</td></tr>\n");
+        }
+        responseData.append("</table>\n</body>\n</html>");
+        return responseData;
+    }else if(fileInfo.isFile()){
+        //https://blog.csdn.net/A18373279153/article/details/80364320
+        QFile file(path_abs);
+        QMimeDatabase MD;
+        QMimeType mimeType = MD.mimeTypeForFile(path_abs);
+        QString mime = mimeType.name();
+        qDebug() << mime;
+        if (file.open(QIODevice::ReadOnly)) {
+            QString http = "HTTP/1.1 200 OK\r\n";
+                http += "Server: QTcpSocket\r\n";
+                //http += "Content-Type: application/octet-stream;charset=utf-8\r\n";
+                http += "Content-Type: " + mime + ";charset=utf-8\r\n";
+                http += "Connection: keep-alive\r\n";
+                http += QString("Content-Length: %1\r\n\r\n").arg(QString::number(file.size()));
+            QByteArray headers, BA;
+            headers.append(http);
+            socket->write(headers);
+            while (!file.atEnd()) {
+                BA = file.read(10240);  //每次读取10k数据
+                socket->write(BA);
+                qDebug() << "\b" << file.pos();
+            }
+        } else {
+            qDebug() << path_abs << "open failed!";
+        }
     }
-    responseData.append("</table>\n</body>\n</html>");
-    return responseData;
+    return "";
 }
 
 void QClientThread::disconnect()
