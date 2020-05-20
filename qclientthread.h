@@ -44,7 +44,7 @@ private:
     // Список тем указанонго предмета
     QString ListThemes(QString subject);
     // Получить список предметов
-    QString ListSubjects(QString path);
+    void ListSubjects(QString path);
     // Путь к каталогу-хранилищу
     QString storageFolder;
     // Дескриптор клиентского сокета

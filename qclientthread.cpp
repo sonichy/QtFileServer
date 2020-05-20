@@ -83,7 +83,7 @@ void QClientThread::readyRead()
 
 void QClientThread::ProcessData(QByteArray receivedData)
 {
-    QString response = "HTTP/1.1 200 OK\r\nContent-type: text/html; charset=utf-8\r\n\r\n%1";
+    //QString response = "HTTP/1.1 200 OK\r\nContent-type: text/html; charset=utf-8\r\n\r\n%1";
     //QByteArray receivedData = socket->readAll();
     qDebug() << socketDescriptor;
     qDebug() << "Headers: ";
@@ -100,216 +100,220 @@ void QClientThread::ProcessData(QByteArray receivedData)
     }
     qDebug() << "_________________________________________________________________";
 
-    QString request = QString::fromLocal8Bit(receivedData);
-    std::map<QString, QString> items;
-    //QString cmd;
-    //qDebug() << "params:" << cmd.indexOf("/?");
-    if(request.indexOf("/?") == -1)
-    {
-        request = "";
-    }
-    else
-    {
-        QString params = request.section("\r\n", 0, 0);
-        int pos = params.lastIndexOf(' ');
-        if(pos != -1)
-        {
-            params = params.mid(0, pos);
-            //qDebug() << request;
-        }
+//    QString request = QString::fromLocal8Bit(receivedData);
+//    std::map<QString, QString> items;
+//    //QString cmd;
+//    //qDebug() << "params:" << cmd.indexOf("/?");
+//    if(request.indexOf("/?") == -1)
+//    {
+//        request = "";
+//    }
+//    else
+//    {
+//        QString params = request.section("\r\n", 0, 0);
+//        int pos = params.lastIndexOf(' ');
+//        if(pos != -1)
+//        {
+//            params = params.mid(0, pos);
+//            //qDebug() << request;
+//        }
 
-        QUrlQuery query(params.section("/?", 1));
-        for(int i = 0; i < query.queryItems().size(); ++i)
-        {
-            QPair<QString, QString> p = query.queryItems()[i];
-            items[p.first] = p.second;
-            //qDebug() << p.first << " " << p.second;
-        }
-    }
+//        QUrlQuery query(params.section("/?", 1));
+//        for(int i = 0; i < query.queryItems().size(); ++i)
+//        {
+//            QPair<QString, QString> p = query.queryItems()[i];
+//            items[p.first] = p.second;
+//            //qDebug() << p.first << " " << p.second;
+//        }
+//    }
 
-    //qDebug() << "INDEX=" <<
-    /*QString body = receivedData.mid(receivedData.indexOf("\r\n\r\n"));
-    QString fname = receivedData.mid(receivedData.indexOf("filename"));
+//    //qDebug() << "INDEX=" <<
+//    /*QString body = receivedData.mid(receivedData.indexOf("\r\n\r\n"));
+//    QString fname = receivedData.mid(receivedData.indexOf("filename"));
 
-    QStringList arr = body.split("\r\n\r\n");
-    qDebug() << "================";
-    for(int i = 0; i < arr.size(); ++i)
-    {
-        qDebug() << "================";
-        qDebug() << arr[i];
-        qDebug() << "================";
-    }
-    qDebug() << "================";
-    qDebug() << "SIZE :" << receivedData.size();
-    qDebug() << "BODY :" << body ;
-    qDebug() << "FNAME:" << fname;*/
+//    QStringList arr = body.split("\r\n\r\n");
+//    qDebug() << "================";
+//    for(int i = 0; i < arr.size(); ++i)
+//    {
+//        qDebug() << "================";
+//        qDebug() << arr[i];
+//        qDebug() << "================";
+//    }
+//    qDebug() << "================";
+//    qDebug() << "SIZE :" << receivedData.size();
+//    qDebug() << "BODY :" << body ;
+//    qDebug() << "FNAME:" << fname;*/
 
-    //qDebug() << "action=" << items["action"];
-    QString responseData = "";
+//    //qDebug() << "action=" << items["action"];
+//    QString responseData = "";
 
-    // Команда вывода списка предметов или тем или шпаргалок
-    if(items["action"] == "list")
-    {
-        qDebug() << "action=" << "LIST";
-        if(items["subject"] == "")
-        {
-            responseData = ListSubjects("");
-        }
-        else
-        {
-            // Получаем название предмета (совпадает с именем папки)
-            QString subject = QUrl::fromPercentEncoding( items["subject"].toUtf8() );
-            // Если тема не задана - выводим список тем выбранного предмета
-            if(items["theme"] == "")
-            {
-                // Получаем список тем (список подпапок)
-                responseData = ListThemes( subject );
-            }
-            // Если и предмет и тема заданы - выводим список шпаргалок
-            else
-            {
-                QString theme = QUrl::fromPercentEncoding( items["theme"].toUtf8() );
-                // Если шпора не выбрана
-                if(items["shpora"] == "")
-                {
-                    // Получаем список шпаргалок по выбранной теме
-                    responseData = ListShpores( subject, theme );
-                    //qDebug() << "Subj=" << subject << ", theme=" << theme;
-                }
-                // Если шпора выбрана - читаем и отправляем файл клиенту
-                else
-                {
-                    QString shpora = QUrl::fromPercentEncoding( items["shpora"].toUtf8() );
+//    // Команда вывода списка предметов или тем или шпаргалок
+//    if(items["action"] == "list")
+//    {
+//        qDebug() << "action=" << "LIST";
+//        if(items["subject"] == "")
+//        {
+//            //responseData =
+//            ListSubjects("");
+//        }
+//        else
+//        {
+//            // Получаем название предмета (совпадает с именем папки)
+//            QString subject = QUrl::fromPercentEncoding( items["subject"].toUtf8() );
+//            // Если тема не задана - выводим список тем выбранного предмета
+//            if(items["theme"] == "")
+//            {
+//                // Получаем список тем (список подпапок)
+//                responseData = ListThemes( subject );
+//            }
+//            // Если и предмет и тема заданы - выводим список шпаргалок
+//            else
+//            {
+//                QString theme = QUrl::fromPercentEncoding( items["theme"].toUtf8() );
+//                // Если шпора не выбрана
+//                if(items["shpora"] == "")
+//                {
+//                    // Получаем список шпаргалок по выбранной теме
+//                    responseData = ListShpores( subject, theme );
+//                    //qDebug() << "Subj=" << subject << ", theme=" << theme;
+//                }
+//                // Если шпора выбрана - читаем и отправляем файл клиенту
+//                else
+//                {
+//                    QString shpora = QUrl::fromPercentEncoding( items["shpora"].toUtf8() );
 
-                    QByteArray blob = GetShpora( subject, theme, shpora );
-                    response = "HTTP/1.1 200 OK\r\nContent-type: text/html; charset=utf-8\r\nContent-Type: image/png\r\nContent-Length: %1\r\n\r\n";
-                    QByteArray raw = response.arg(blob.size()).toUtf8();
-                    raw.insert(raw.size(), blob);
+//                    QByteArray blob = GetShpora( subject, theme, shpora );
+//                    response = "HTTP/1.1 200 OK\r\nContent-type: text/html; charset=utf-8\r\nContent-Type: image/png\r\nContent-Length: %1\r\n\r\n";
+//                    QByteArray raw = response.arg(blob.size()).toUtf8();
+//                    raw.insert(raw.size(), blob);
 
-                    socket->write(raw);
-                    qDebug() << raw;
-                    socket->disconnectFromHost();
-                    return;
-                }
-            }
+//                    socket->write(raw);
+//                    qDebug() << raw;
+//                    socket->disconnectFromHost();
+//                    return;
+//                }
+//            }
 
-        }
-    }
-    else if(items["action"] == "add")
-    {
-        // Получаем предмет
-        QString subject = QUrl::fromPercentEncoding( items["subject"].toUtf8() ).replace(':', ' ');
-        // Получаем тему
-        QString theme = QUrl::fromPercentEncoding( items["theme"].toUtf8() ).replace(':', ' ');;
-        // Получаем шпору
-        QString shpora = QUrl::fromPercentEncoding( items["shpora"].toUtf8() );
+//        }
+//    }
+//    else if(items["action"] == "add")
+//    {
+//        // Получаем предмет
+//        QString subject = QUrl::fromPercentEncoding( items["subject"].toUtf8() ).replace(':', ' ');
+//        // Получаем тему
+//        QString theme = QUrl::fromPercentEncoding( items["theme"].toUtf8() ).replace(':', ' ');;
+//        // Получаем шпору
+//        QString shpora = QUrl::fromPercentEncoding( items["shpora"].toUtf8() );
 
-        QString subjectFolder = QDir(storageFolder).filePath( subject );
-        QString themeFolder = QDir( subjectFolder ).filePath( theme );
-
-
-        qDebug() << "action=" << "ADD";
-        // Если предмет не задан
-        if(items["subject"] == "")
-        {
-            responseData = "-1";
-        }
-        // Если предмет задан
-        else
-        {
-            qDebug() << "Subject:" << subject;
-            qDebug() << "Theme  :" << items["theme"];
-
-            // Если папка с выбранным предметом не создана - создаем
-            if(!QDir(subjectFolder).exists())
-            {
-                qDebug() << "Create subject folder:" << subjectFolder;
-                QDir().mkdir(subjectFolder);
-                responseData = ListSubjects("");
-            }
-            // Если тема задана
-            if(items["theme"] != "")
-            {
-                if(!QDir(themeFolder).exists())
-                {
-                    qDebug() << "Create theme folder:" << themeFolder;
-                    QDir().mkdir(themeFolder);
-                    responseData = ListThemes( subject );
-                }
-            }
-            // Шпора задана
-            if(items["shpora"] != "")
-            {
-                QByteArray header = receivedData.mid(0, receivedData.indexOf("\r\n\r\n"));
-                QByteArray body = receivedData.mid(receivedData.indexOf("\r\n\r\n"));
-                int boundaryPos = header.indexOf("boundary=");
-                QByteArray boundary = header.mid(boundaryPos);
-                boundary = boundary.mid(9, boundary.indexOf("\r\n") - 9);//, header.indexOf("\r\n", boundaryPos));
-                qDebug() << "HEADER" << header;
-                qDebug() << "Boundary=" << boundary;
-                //qDebug() << body.indexOf(boundary);
-                int startPos = body.indexOf("filename=");
-                int endPos = body.indexOf("\r\n", startPos);
-                qDebug() << startPos << ", " << endPos;
-                QString fname = body.mid(startPos, endPos - startPos);
-                fname = fname.mid(9);
-                qDebug() << "Filename:" << fname;
-
-                int end = body.indexOf("\r\n--" + boundary + "--\r\n");
-                int start = body.lastIndexOf("\r\n--" + boundary + "\r\n", end - 1);
-                qDebug() << "Start=" << start << ", end=" << end;
-                start = body.indexOf("\r\n\r\n", start) + 4;
-                QByteArray blob = body.mid(start, end - start);
-                //blob = blob.mid(blob.indexOf("\r\n" + boundary + "\r\n"));
-                qDebug() << "PART LAST=" << blob.size();//, pos);
-                /*QList<QByteArray> list = body.split(boundary);
-                for(int i = 0; i < list.size(); ++i)
-                    qDebug() << "PART#1=" << list[i];*/
-                //qDebug() << "BODY" << body;
-                //qDebug() << "Uploadfile=" << shpora << ", path=" << shporaFile;
-                //qDebug() << "SIZE=" << receivedData.size();
-                //socket->read(1)
-                //QByteArray blob = socket->read(20815);
-                //qDebug() << "Received:" << blob.size() << " bytes";
+//        QString subjectFolder = QDir(storageFolder).filePath( subject );
+//        QString themeFolder = QDir( subjectFolder ).filePath( theme );
 
 
-                shpora = fname.remove(0, 1);
-                shpora = shpora .remove(fname.size() - 1, 1);
-                QString shporaFile = QDir(themeFolder).filePath(shpora);
+//        qDebug() << "action=" << "ADD";
+//        // Если предмет не задан
+//        if(items["subject"] == "")
+//        {
+//            responseData = "-1";
+//        }
+//        // Если предмет задан
+//        else
+//        {
+//            qDebug() << "Subject:" << subject;
+//            qDebug() << "Theme  :" << items["theme"];
 
-                qDebug() << "Shpora path:" << shporaFile;
-                // Если шпора уже есть в папке
-                if(QFile(shporaFile).exists())
-                {
-                    qDebug() << "Shpora already exist" << shporaFile;
-                    responseData = "-1";
-                }
-                // Иначе пробуем сохранить
-                else
-                {
-                    QFile file(shporaFile);
-                    if (!file.open(QIODevice::WriteOnly)) {
-                        responseData = "-1";
-                    }
-                    file.write(blob);
+//            // Если папка с выбранным предметом не создана - создаем
+//            if(!QDir(subjectFolder).exists())
+//            {
+//                qDebug() << "Create subject folder:" << subjectFolder;
+//                QDir().mkdir(subjectFolder);
+//                //responseData =
+//                ListSubjects("");
+//            }
+//            // Если тема задана
+//            if(items["theme"] != "")
+//            {
+//                if(!QDir(themeFolder).exists())
+//                {
+//                    qDebug() << "Create theme folder:" << themeFolder;
+//                    QDir().mkdir(themeFolder);
+//                    responseData = ListThemes( subject );
+//                }
+//            }
+//            // Шпора задана
+//            if(items["shpora"] != "")
+//            {
+//                QByteArray header = receivedData.mid(0, receivedData.indexOf("\r\n\r\n"));
+//                QByteArray body = receivedData.mid(receivedData.indexOf("\r\n\r\n"));
+//                int boundaryPos = header.indexOf("boundary=");
+//                QByteArray boundary = header.mid(boundaryPos);
+//                boundary = boundary.mid(9, boundary.indexOf("\r\n") - 9);//, header.indexOf("\r\n", boundaryPos));
+//                qDebug() << "HEADER" << header;
+//                qDebug() << "Boundary=" << boundary;
+//                //qDebug() << body.indexOf(boundary);
+//                int startPos = body.indexOf("filename=");
+//                int endPos = body.indexOf("\r\n", startPos);
+//                qDebug() << startPos << ", " << endPos;
+//                QString fname = body.mid(startPos, endPos - startPos);
+//                fname = fname.mid(9);
+//                qDebug() << "Filename:" << fname;
 
-                    responseData = ListShpores(subject, theme);
-                }
-            }
+//                int end = body.indexOf("\r\n--" + boundary + "--\r\n");
+//                int start = body.lastIndexOf("\r\n--" + boundary + "\r\n", end - 1);
+//                qDebug() << "Start=" << start << ", end=" << end;
+//                start = body.indexOf("\r\n\r\n", start) + 4;
+//                QByteArray blob = body.mid(start, end - start);
+//                //blob = blob.mid(blob.indexOf("\r\n" + boundary + "\r\n"));
+//                qDebug() << "PART LAST=" << blob.size();//, pos);
+//                /*QList<QByteArray> list = body.split(boundary);
+//                for(int i = 0; i < list.size(); ++i)
+//                    qDebug() << "PART#1=" << list[i];*/
+//                //qDebug() << "BODY" << body;
+//                //qDebug() << "Uploadfile=" << shpora << ", path=" << shporaFile;
+//                //qDebug() << "SIZE=" << receivedData.size();
+//                //socket->read(1)
+//                //QByteArray blob = socket->read(20815);
+//                //qDebug() << "Received:" << blob.size() << " bytes";
 
-        }
 
-    }
-    else
-    {
-        qDebug() << "action=" << "DEFAULT LIST";
-        responseData = ListSubjects(path);
-    }
+//                shpora = fname.remove(0, 1);
+//                shpora = shpora .remove(fname.size() - 1, 1);
+//                QString shporaFile = QDir(themeFolder).filePath(shpora);
+
+//                qDebug() << "Shpora path:" << shporaFile;
+//                // Если шпора уже есть в папке
+//                if(QFile(shporaFile).exists())
+//                {
+//                    qDebug() << "Shpora already exist" << shporaFile;
+//                    responseData = "-1";
+//                }
+//                // Иначе пробуем сохранить
+//                else
+//                {
+//                    QFile file(shporaFile);
+//                    if (!file.open(QIODevice::WriteOnly)) {
+//                        responseData = "-1";
+//                    }
+//                    file.write(blob);
+
+//                    responseData = ListShpores(subject, theme);
+//                }
+//            }
+
+//        }
+
+//    }
+//    else
+//    {
+        qDebug() << "Action:" << "DEFAULT LIST";
+        //responseData =
+        ListSubjects(path);
+//    }
     // Отвечаем клиенту
 
-    socket->write(response.arg(responseData).toUtf8());
-    qDebug() << "=== Response ==>";
-    qDebug() << response.arg(responseData).toUtf8();
+    //socket->write(response.arg(responseData).toUtf8());
+    //socket->write(responseData.toUtf8());
+    //qDebug() << "=== Response ==>";
+    //qDebug() << responseData;
     // Закрываем соединение
     socket->disconnectFromHost();
     // Очищаем буфер
@@ -481,7 +485,8 @@ QString QClientThread::ListThemes(QString subject)
     return responseData;
 }
 // Метод получения списка предметов
-QString QClientThread::ListSubjects(QString path)
+//QString
+void QClientThread::ListSubjects(QString path)
 {
     //    QStringList folders;
     //    QDirIterator directories(storageFolder, QDir::Files | QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot);//, QDirIterator::Subdirectories);
@@ -514,7 +519,14 @@ QString QClientThread::ListSubjects(QString path)
     //    responseData.append("<script>function replacespace() { var p = document.getElementById('p'); p.value = p.value.replace(/\\s+/g, ':');}</script>");
     //    responseData.append("</div></div>");
 
-    QString path_abs = storageFolder + QByteArray::fromPercentEncoding(path.toUtf8());  //%XX反转义
+    path = QByteArray::fromPercentEncoding(path.toUtf8());  //%XX反转义
+    QString path_abs = storageFolder + path;
+    QString pathr;
+    if(path == "/")
+        pathr = path;
+    else
+        pathr = path + "/";
+    qDebug() << path << path_abs;
     QFileInfo fileInfo(path_abs);
     QString responseData;
     if(fileInfo.isDir()){
@@ -524,12 +536,27 @@ QString QClientThread::ListSubjects(QString path)
         responseData = "<!DOCTYPE html>\n<html>\n<head>\n<title>File List</title>\n<style>\na { text-decoration:none; }\ntd { padding:0 10px; }\n</style>\n</head>\n<body>\n<h1>" + path + "</h1>\n<table>\n<tr><th>Name</th><th>Size</th><th>Time</th></tr>";
         for(int i=0; i<fileInfoList.count(); i++) {
             if(fileInfoList.at(i).isDir())
-                responseData.append("<tr><td>[<a href='" + fileInfoList.at(i).fileName() + "'>" + fileInfoList.at(i).fileName() + "</a>]</td><td>" + QString::number(fileInfoList.at(i).size()) + "</td><td>" + fileInfoList.at(i).lastModified().toString("yyyy-MM-dd hh:mm:ss") + "</td></tr>\n");
+                if(fileInfoList.at(i).fileName() == "." || fileInfoList.at(i).fileName() == ".."){
+                    responseData.append("<tr><td>[<a href='" + fileInfoList.at(i).fileName() + "'>" + fileInfoList.at(i).fileName() + "</a>]</td><td></td><td></td></tr>\n");
+                }else{
+                    responseData.append("<tr><td>[<a href='" + pathr + fileInfoList.at(i).fileName() + "'>" + fileInfoList.at(i).fileName() + "</a>]</td><td>" + QString::number(fileInfoList.at(i).size()) + "</td><td>" + fileInfoList.at(i).lastModified().toString("yyyy-MM-dd hh:mm:ss") + "</td></tr>\n");
+                }
             else
-                responseData.append("<tr><td><a href='" + fileInfoList.at(i).fileName() + "'>" + fileInfoList.at(i).fileName() + "</a></td><td>" + QString::number(fileInfoList.at(i).size()) + "</td><td>" + fileInfoList.at(i).lastModified().toString("yyyy-MM-dd hh:mm:ss") + "</td></tr>\n");
+                responseData.append("<tr><td><a href='" + pathr + fileInfoList.at(i).fileName() + "'>" + fileInfoList.at(i).fileName() + "</a></td><td>" + QString::number(fileInfoList.at(i).size()) + "</td><td>" + fileInfoList.at(i).lastModified().toString("yyyy-MM-dd hh:mm:ss") + "</td></tr>\n");
         }
         responseData.append("</table>\n</body>\n</html>");
-        return responseData;
+        QByteArray headers, BA;
+        BA = responseData.toUtf8();
+        QString http = "HTTP/1.1 200 OK\r\n";
+        http += "Server: QTcpSocket\r\n";
+        http += "Content-Type: text/html;charset=utf-8\r\n";
+        //http += "Connection: keep-alive\r\n";
+        http += QString("Content-Length: %1\r\n\r\n").arg(QString::number(BA.length()));
+        headers.append(http);
+        socket->write(headers);
+        socket->write(BA);
+        qDebug() << headers;
+        qDebug() << BA;
     }else if(fileInfo.isFile()){
         //https://blog.csdn.net/A18373279153/article/details/80364320
         QFile file(path_abs);
@@ -539,24 +566,25 @@ QString QClientThread::ListSubjects(QString path)
         qDebug() << mime;
         if (file.open(QIODevice::ReadOnly)) {
             QString http = "HTTP/1.1 200 OK\r\n";
-                http += "Server: QTcpSocket\r\n";
-                //http += "Content-Type: application/octet-stream;charset=utf-8\r\n";
-                http += "Content-Type: " + mime + ";charset=utf-8\r\n";
-                http += "Connection: keep-alive\r\n";
-                http += QString("Content-Length: %1\r\n\r\n").arg(QString::number(file.size()));
+            http += "Server: QTcpSocket\r\n";
+            //http += "Content-Type: application/octet-stream;charset=utf-8\r\n";
+            http += "Content-Type: " + mime + ";charset=utf-8\r\n";
+            http += "Connection: keep-alive\r\n";
+            http += QString("Content-Length: %1\r\n\r\n").arg(QString::number(file.size()));
             QByteArray headers, BA;
             headers.append(http);
             socket->write(headers);
+            qDebug() << headers;
             while (!file.atEnd()) {
                 BA = file.read(10240);  //每次读取10k数据
                 socket->write(BA);
-                qDebug() << "\b" << file.pos();
+                //qDebug() << "\b" << file.pos();
             }
         } else {
             qDebug() << path_abs << "open failed!";
         }
     }
-    return "";
+    //return "";
 }
 
 void QClientThread::disconnect()
