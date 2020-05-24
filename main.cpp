@@ -5,7 +5,8 @@ int main(int argc, char *argv[])
 {
     qSetMessagePattern("[ %{file}: %{line} ] %{message}");
     QCoreApplication a(argc, argv);    
-    QString path = a.applicationDirPath();
+    //QString path = a.applicationDirPath();
+    QString path = "/media/sonichy/JOB";
     int port = 8000;
     QServer Server(path, port);
     Server.StartServer();

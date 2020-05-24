@@ -118,8 +118,9 @@ void QClientThread::ListSubjects(QString path)
     qDebug() << path << path_abs;
     QFileInfo fileInfo(path_abs);
     QString responseData;
-    if(fileInfo.isDir()){
+    if(fileInfo.isDir()){        
         QDir dir(path_abs);
+        dir.setSorting(QDir::DirsFirst | QDir::Name);
         //dir.setFilter(QDir::NoDotAndDotDot);
         QFileInfoList fileInfoList = dir.entryInfoList();
         responseData = "<!DOCTYPE html>\n<html>\n<head>\n<title>File List</title>\n<style>\na { text-decoration:none; }\ntd { padding:0 10px; }\n</style>\n</head>\n<body>\n<h1>" + path + "</h1>\n<table>\n<tr><th>Name</th><th>Size</th><th>Time</th></tr>";
