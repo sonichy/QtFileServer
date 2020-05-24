@@ -123,7 +123,7 @@ void QClientThread::ListSubjects(QString path)
         dir.setSorting(QDir::DirsFirst | QDir::Name);
         //dir.setFilter(QDir::NoDotAndDotDot);
         QFileInfoList fileInfoList = dir.entryInfoList();
-        responseData = "<!DOCTYPE html>\n<html>\n<head>\n<title>File List</title>\n<style>\na { text-decoration:none; }\ntd { padding:0 10px; }\n</style>\n</head>\n<body>\n<h1>" + path + "</h1>\n<table>\n<tr><th>Name</th><th>Size</th><th>Time</th></tr>";
+        responseData = "<!DOCTYPE html>\n<html>\n<head>\n<title>File List</title>\n<style>\na { text-decoration:none; }\ntd { padding:0 10px; white-space:nowrap; }\n</style>\n</head>\n<body>\n<h1>" + path + "</h1>\n<table>\n<tr><th>Name</th><th>Size</th><th>Time</th></tr>";
         for(int i=0; i<fileInfoList.count(); i++) {
             if(fileInfoList.at(i).isDir())
                 if(fileInfoList.at(i).fileName() == "." || fileInfoList.at(i).fileName() == ".."){
